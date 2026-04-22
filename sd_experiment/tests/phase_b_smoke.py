@@ -22,8 +22,6 @@ import sys
 import time
 from pathlib import Path
 
-import torch
-
 
 def main() -> int:
     ap = argparse.ArgumentParser()
@@ -41,6 +39,9 @@ def main() -> int:
         default="results/phase_b_smoke",
     )
     args = ap.parse_args()
+
+    # Heavy deps deferred so --help works on CPU-only hosts.
+    import torch
 
     if not torch.cuda.is_available():
         print(
