@@ -1,0 +1,9 @@
+[ok] prompt structure
+[ok] build_chat_prompt literal
+[ok] pad_to_bucket monotone (274 -> 342 -> 818)
+[ok] bucketing ({233: 1, 246: 2, 284: 1})
+[ok] collector math + save round-trip
+[swe_bench_loader] HF load failed (FileNotFoundError: Couldn't find any data file at /home/user/sd_bench/sd_experiment/princeton-nlp/SWE-bench_Lite. Couldn't find 'princeton-); falling back to embedded mock samples.
+[ok] swebench mock load (2 rows)
+
+All Phase B offline checks passed.
