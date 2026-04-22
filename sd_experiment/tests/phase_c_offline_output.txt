@@ -1,0 +1,10 @@
+[ok] build_tree_string
+[ok] validate_tree_params
+[ok] CLI has all 16 required flags
+[ok] filename stems
+[ok] _load_prompts jsonl round-trip
+[swe_bench_loader] HF load failed (FileNotFoundError: Couldn't find any data file at /home/user/sd_bench/sd_experiment/princeton-nlp/SWE-bench_Lite. Couldn't find 'princeton-); falling back to embedded mock samples.
+[ok] _load_prompts mock fallback
+[ok] _config_echo is JSON-serialisable
+
+All Phase C offline checks passed.
