@@ -1,0 +1,16 @@
+[ok] summary.csv (3123 bytes)
+[ok] pivot_step_latency.csv (44 bytes)
+[ok] pivot_throughput.csv (47 bytes)
+[ok] pivot_accepted_per_req.csv (44 bytes)
+[ok] heatmap_step_latency.png (35965 bytes)
+[ok] heatmap_throughput.png (36090 bytes)
+[ok] heatmap_accepted_per_req.png (30883 bytes)
+[ok] pareto_throughput_vs_ptl.png (61737 bytes)
+[ok] pareto_kv_vs_throughput.png (47976 bytes)
+[ok] pareto_verifywork_vs_throughput.png (54555 bytes)
+[ok] acceptance_vs_tree.png (56230 bytes)
+[ok] describe.txt (2961 bytes)
+[ok] DataFrame + pivot structural checks
+[ok] describe.txt contents
+
+All Phase D offline checks passed.

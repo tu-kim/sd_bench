@@ -1,8 +1,13 @@
 # SD trade-off experiment grid.
 #
-# A value of T (tree size) for a given (D, K) must satisfy
-# T == sum(K**d for d in 1..D); configs that violate this are skipped by
-# scripts/run_grid.sh.  For chain SD (K=1), T == D.
+# Phase 1 sweeps (batch_size, tree_spec).  Each tree_spec is an explicit
+# (D, K) pair so the builder always produces a valid vLLM
+# `speculative_token_tree` (no runtime rejection).  T is derived:
+#     T = sum(K**d for d in 1..D)
+# so the constraints in VLLM_API_NOTES.md §2 are always satisfied.
+#
+# Tree specs are chosen to give diverse T values across a realistic
+# range — the analysis layer will bin on T to surface the B vs T trade.
 
 global:
   model: meta-llama/Llama-3.1-8B-Instruct
@@ -13,27 +18,40 @@ global:
   max_model_len: 65536
   temperature: 0.0
   seed: 0
-  warmup_decode_steps: 3        # discard first N decode steps per run
-  max_steps: 200                # cap decode steps per run
-  max_tokens: 128               # per-request
-  num_samples_per_run: 16
+  warmup_decode_steps: 3
+  max_steps: 200
+  max_tokens: 128
+  num_samples_per_run: 32   # pool we submit; batch_size caps concurrency
 
 phase1_batch_x_tree:
-  # Fixed ~8K-token prompts.
   context_bucket: 8192
-  batch_sizes:  [1, 4, 8, 16, 32]
-  depths:       [1, 3, 5, 7]     # D = num_speculative_tokens
-  tree_sizes:   [4, 8, 16, 32]   # T = num_draft_tokens
-  # Branching K is derived from (D, T).  If no integer K>=1 solves
-  # sum(K**d for d in 1..D) == T, the config is skipped.
+  batch_sizes: [1, 4, 8, 16, 32]
+  # (D, K) list — T is derived.  Ordered by ascending T for readability.
+  tree_specs:
+    - { depth: 1, branching: 4 }     # T=4   (1 level, K=4)
+    - { depth: 2, branching: 2 }     # T=6
+    - { depth: 3, branching: 2 }     # T=14
+    - { depth: 1, branching: 16 }    # T=16  (1 level, K=16, super-wide)
+    - { depth: 4, branching: 2 }     # T=30
+    - { depth: 2, branching: 4 }     # T=20
+    - { depth: 3, branching: 1 }     # T=3   chain, for reference
+    - { depth: 5, branching: 1 }     # T=5   chain, for reference
 
 phase2_context_sensitivity:
   batch_size: 8
-  depth: 5
+  tree_specs:
+    - { depth: 3, branching: 2 }     # T=14
+    - { depth: 4, branching: 2 }     # T=30
   context_buckets: [2048, 8192, 32768]
-  tree_sizes: [4, 8, 16, 32]
 
 phase3_baseline_no_sd:
-  # SD disabled; sweep batch sizes for head-to-head comparison.
   context_bucket: 8192
   batch_sizes: [1, 4, 8, 16, 32]
+
+# MINIMAL=1 overrides: 2x2 = 4 SD configs for end-to-end smoke.
+minimal:
+  context_bucket: 2048
+  batch_sizes: [1, 4]
+  tree_specs:
+    - { depth: 2, branching: 2 }     # T=6
+    - { depth: 3, branching: 2 }     # T=14
