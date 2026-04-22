@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.venv/
+venv/
+.env
+
+# Experiment outputs.
+sd_experiment/results/*/
+sd_experiment/data/
+!sd_experiment/results/.gitkeep
+
+# HF cache / offload.
+.hf_cache/

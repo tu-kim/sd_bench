@@ -1,0 +1,71 @@
+# ============================================================================
+# smoke_test.py output — Phase A
+# ============================================================================
+#
+# This inspection host has NO CUDA GPU (torch.cuda.is_available() == False;
+# nvidia-smi not found; Triton's CUDA driver check also fails at import time).
+# A full end-to-end run of smoke_test.py — which loads Llama-3.1-8B-Instruct
+# and EAGLE3-LLaMA3.1-Instruct-8B onto the GPU and drives engine.step() —
+# therefore cannot complete here.  It MUST be re-run on the target GPU host
+# before Phase B is signed off.
+#
+# What *was* validated on this host (also machine-checked during Phase A):
+#
+#   (a) vLLM 0.17.1 is the installed version.
+#   (b) All imports used by smoke_test.py resolve against 0.17.1
+#       (LLMEngine, SamplingParams, EngineArgs, StatLoggerBase,
+#        SchedulerStats, IterationStats, SpecDecodingStats).
+#   (c) CapturingStatLogger is a valid non-abstract subclass of
+#       vllm.v1.metrics.loggers.StatLoggerBase (instantiates without
+#       TypeError, so no abstract method is missing).
+#   (d) EngineArgs.speculative_config is the sole SD entry point in 0.17.1;
+#       the older per-arg fields are gone.  See VLLM_API_NOTES.md §2.
+#   (e) LLMEngine.from_engine_args(..., stat_loggers=[...]) is the signature
+#       the harness uses.  See VLLM_API_NOTES.md §1.
+#   (f) `step() -> list[RequestOutput]` — per-step SD stats come through the
+#       stat_loggers channel, not from step()'s return value.
+#       See VLLM_API_NOTES.md §3.
+#
+# Captured --help output and env info follow as evidence that
+# smoke_test.py loads without syntax / import errors on 0.17.1.
+# ============================================================================
+
+$ python3 tests/smoke_test.py --help
+INFO 04-22 14:27:15 [importing.py:44] Triton is installed but 0 active driver(s) found (expected 1). Disabling Triton to prevent runtime errors.
+INFO 04-22 14:27:15 [importing.py:68] Triton not installed or not compatible; certain GPU-related functions will not be available.
+usage: smoke_test.py [-h] [--model MODEL] [--draft-model DRAFT_MODEL]
+                     [--num-speculative-tokens NUM_SPECULATIVE_TOKENS]
+                     [--tensor-parallel-size TENSOR_PARALLEL_SIZE]
+                     [--gpu-memory-utilization GPU_MEMORY_UTILIZATION]
+                     [--max-model-len MAX_MODEL_LEN] [--max-tokens MAX_TOKENS]
+                     [--prompt PROMPT]
+
+options:
+  -h, --help            show this help message and exit
+  --model MODEL
+  --draft-model DRAFT_MODEL
+                        Set to empty string to disable SD.
+  --num-speculative-tokens NUM_SPECULATIVE_TOKENS
+  --tensor-parallel-size TENSOR_PARALLEL_SIZE
+  --gpu-memory-utilization GPU_MEMORY_UTILIZATION
+  --max-model-len MAX_MODEL_LEN
+  --max-tokens MAX_TOKENS
+  --prompt PROMPT
+
+$ python3 -c "import vllm, torch; print(vllm.__version__); print(torch.__version__); print(torch.cuda.is_available())"
+vllm 0.17.1
+torch 2.10.0+cu128
+cuda.is_available: False
+
+# ----------------------------------------------------------------------------
+# Next action required by user:
+#   On the CUDA box:
+#
+#     python tests/smoke_test.py \
+#         2>&1 | tee tests/smoke_test_output.txt
+#
+#   This will replace this placeholder with the real full-run transcript
+#   (model load, 1 request, 32 tokens, per-step spec-decode stats dump).
+#   If it crashes, do NOT weaken the test — fix the harness per the API
+#   notes and re-run.
+# ----------------------------------------------------------------------------
